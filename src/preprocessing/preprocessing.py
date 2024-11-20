@@ -13,16 +13,6 @@ lemmatizer = WordNetLemmatizer()
 nltk.download('punkt')
 nltk.download('stopwords')
 
-
-def create_lexicon(tokenized_data):
-    lexicon = set()  # Using a set to store unique words
-
-    for tokens in tokenized_data:
-        # Add each token (word) to the lexicon set
-        lexicon.update(tokens)
-    
-    return lexicon
-
 def read_csv_files(csv_folder):
     """Reads CSV files and extracts text columns."""
     text_data = []
@@ -81,24 +71,3 @@ def tokenize_text_from_csv(csv_file):
         tokenized_data.append(filtered_tokens)
     
     return tokenized_data
-
-
-# Main function to run the entire process
-def main():
-    # Define your folder path containing the CSV files
-    csv_folder = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\raw_data\fashion-dataset\csv_folder"
-    styles_csv_path = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\raw_data\fashion-dataset\csv_folder\styles_new.csv"
-
-    # Example: Tokenize the text from 'styles_new.csv'
-    tokenized_styles = tokenize_text_from_csv(styles_csv_path)
-    lemmatized_data = lemmatize_tokens(tokenized_styles)
-    lexicon = create_lexicon(lemmatized_data)
-    print(f"Total unique words in the lexicon: {len(lexicon)}")
-    print(f"Lexicon sample: {list(lexicon)[:20]}")  # P
-
-    # # Print tokenized and lemmatized results
-    # for tokens in lemmatized_data:
-    #     print(tokens)
-
-if __name__ == '__main__':
-    main()
