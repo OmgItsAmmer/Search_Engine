@@ -10,6 +10,7 @@ from textblob import TextBlob
 lemmatizer = WordNetLemmatizer()
 
 # Download NLTK data files (if you haven't already)
+nltk.download('punkt_tab')
 nltk.download('punkt')
 nltk.download('stopwords')
 
@@ -86,8 +87,8 @@ def tokenize_text_from_csv(csv_file):
 # Main function to run the entire process
 def main():
     # Define your folder path containing the CSV files
-    csv_folder = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\raw_data\fashion-dataset\csv_folder"
-    styles_csv_path = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\raw_data\fashion-dataset\csv_folder\styles_new.csv"
+    csv_folder = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\raw_data\fashion-dataset\csv_folder"
+    styles_csv_path = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\raw_data\fashion-dataset\csv_folder\styles_new.csv"
 
     # Example: Tokenize the text from 'styles_new.csv'
     tokenized_styles = tokenize_text_from_csv(styles_csv_path)
@@ -99,6 +100,11 @@ def main():
     # # Print tokenized and lemmatized results
     # for tokens in lemmatized_data:
     #     print(tokens)
+    
+    # Build and save the forward index
+    forward_index = build_forward_index(lemmatized_data, product_ids)
+    forward_index_path = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\forward_index.json"
+    save_forward_index(forward_index, forward_index_path)
 
 if __name__ == '__main__':
     main()
