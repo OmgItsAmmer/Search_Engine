@@ -26,8 +26,8 @@ def create_forward_index(processed_csv, output_json):
 
 if __name__ == '__main__':
     # Define file paths
-    processed_csv = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\merged_processed.csv"
-    forward_index_json = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\forward_index.json"
+    processed_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\merged_processed\merged_processed.csv"
+    forward_index_json = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\forward_index\forward_index.json"
 
     # Create and save the forward index
     create_forward_index(processed_csv, forward_index_json)
