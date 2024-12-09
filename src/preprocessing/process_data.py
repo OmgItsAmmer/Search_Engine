@@ -84,21 +84,35 @@ def replace_words_with_ids(data, lexicon):
     return updated_data
 
 def merge_with_image_data(text_df, image_csv):
-    """Merges text data with image data using a common 'id' column."""
+    """Merges text data with image data using a common 'id' column. 
+    If the 'id' doesn't match, fills non-matching columns with NaN."""
     try:
         # Load image data
         image_df = pd.read_csv(image_csv)
 
-        # Ensure 'id' columns match formats (strip extensions if necessary)
-        text_df['id'] = text_df['id'].astype(str).str.replace('.jpg', '', regex=False)
-        image_df['id'] = image_df['id'].astype(str).str.replace('.jpg', '', regex=False)
+        # Align formats for the 'id' column (remove extensions, trim whitespace)
+        text_df['id'] = text_df['id'].astype(str).str.strip().str.replace('.jpg', '', regex=False)
+        image_df['id'] = image_df['id'].astype(str).str.strip().str.replace('.jpg', '', regex=False)
 
-        # Merge text and image data on 'id'
+        # Ensure no duplicated 'id' values in either DataFrame
+        image_df = image_df.drop_duplicates(subset='id', keep='first')
+        text_df = text_df.drop_duplicates(subset='id', keep='first')
+
+        # Merge text and image data on 'id' with a left join
         merged_data = pd.merge(text_df, image_df, on='id', how='left')
+
+        # Explicitly ensure unmatched IDs in `image_csv` have NaN values
+        unmatched_ids = merged_data[merged_data.isnull().any(axis=1)]
+        print(f"Unmatched IDs count: {len(unmatched_ids)}")
+
+        print(f"Merged data contains {len(merged_data)} rows with {merged_data['id'].nunique()} unique IDs.")
         return merged_data
+
     except Exception as e:
         print(f"Error merging data: {e}")
         return text_df
+
+
 
 def save_processed_data(data, output_csv, output_json):
     """Saves processed data to CSV and JSON files."""
@@ -126,10 +140,12 @@ def process_csv_files(text_csv, image_csv, output_csv, output_json, lexicon_json
         if 'productDisplayName' not in text_df.columns or 'id' not in text_df.columns:
             raise ValueError("Input text CSV must contain 'productDisplayName' and 'id' columns.")
 
-        text_data = text_df['productDisplayName'].dropna().tolist()
+        # Preserve original index
+        text_df.reset_index(drop=True, inplace=True)
 
         # Tokenize and lemmatize text data
         print("Processing text data...")
+        text_data = text_df['productDisplayName'].fillna("")  # Replace NaNs with empty strings
         tokenized_data = tokenize_text(text_data)
         lemmatized_data = lemmatize_tokens(tokenized_data)
 
@@ -142,6 +158,8 @@ def process_csv_files(text_csv, image_csv, output_csv, output_json, lexicon_json
         print("Replacing words with IDs...")
         text_df['tokens'] = tokenized_data
         text_df['lemmas'] = lemmatized_data
+
+        # Ensure consistent lengths of data for replacement
         updated_data = replace_words_with_ids(text_df.to_dict(orient="records"), lexicon)
         text_df = pd.DataFrame(updated_data)
 
@@ -159,13 +177,14 @@ def process_csv_files(text_csv, image_csv, output_csv, output_json, lexicon_json
     except Exception as e:
         print(f"Error processing CSV files: {e}")
 
+
 if __name__ == '__main__':
     # Define file paths
-    text_csv = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\raw_data\fashion-dataset\csv_folder\styles_new.csv"
-    image_csv = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\raw_data\fashion-dataset\csv_folder\images.csv"
-    output_csv = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\merged_processed.csv"
-    output_json = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\merged_processed.json"
-    lexicon_json = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\lexicon.json"
+    text_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\raw_data\fashion-dataset\csv_folder\styles_new.csv"
+    image_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\raw_data\fashion-dataset\csv_folder\images.csv"
+    output_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\merged_processed\merged_processed.csv"
+    output_json = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\merged_processed\merged_processed.json"
+    lexicon_json = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\lexicons\lexicon.json"
 
     # Process the input CSV files
     process_csv_files(text_csv, image_csv, output_csv, output_json, lexicon_json)
