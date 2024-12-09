@@ -32,8 +32,7 @@ def tokenize_text(text_data):
         if pd.isna(text):
             tokenized_data.append([])
             continue
-        corrected_text = correct_spelling(text)  # Correct spelling
-        tokens = word_tokenize(corrected_text.lower())  # Tokenize and convert to lowercase
+        tokens = word_tokenize(text.lower())  # Tokenize and convert to lowercase
         filtered_tokens = [word for word in tokens if word.isalnum() and word not in stop_words]  # Remove non-alphanumeric tokens and stopwords
         tokenized_data.append(filtered_tokens)
 
