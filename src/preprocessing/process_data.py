@@ -48,11 +48,41 @@ def lemmatize_tokens(tokenized_data):
     return lemmatized_data
 
 def create_lexicon(lemmatized_data):
-    """Creates a lexicon (unique set of words) from lemmatized data."""
-    lexicon = set()
+    """Creates a lexicon with unique 4-digit IDs for each word."""
+    lexicon = {}
+    current_id = 1000  # Start IDs from 1000
+
     for tokens in lemmatized_data:
-        lexicon.update(tokens)
+        for word in tokens:
+            if word not in lexicon:
+                lexicon[word] = current_id
+                current_id += 1
+
     return lexicon
+
+def save_lexicon(lexicon, output_path):
+    """Saves the lexicon as a JSON file."""
+    try:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, 'w') as f:
+            json.dump(lexicon, f, indent=4)
+        print(f"Lexicon saved to {output_path}")
+    except Exception as e:
+        print(f"Error saving lexicon: {e}")
+
+def replace_words_with_ids(data, lexicon):
+    """
+    Replaces token words and lemmatized words with their corresponding IDs
+    directly in the 'tokens' and 'lemmas' columns.
+    """
+    updated_data = []
+    for row in data:
+        tokens_as_ids = [lexicon.get(word, -1) for word in row['tokens']]  # Replace tokens with IDs
+        lemmas_as_ids = [lexicon.get(word, -1) for word in row['lemmas']]  # Replace lemmas with IDs
+        row['tokens'] = tokens_as_ids
+        row['lemmas'] = lemmas_as_ids
+        updated_data.append(row)
+    return updated_data
 
 def merge_with_image_data(text_df, image_csv):
     """Merges text data with image data using a common 'id' column."""
@@ -74,7 +104,6 @@ def merge_with_image_data(text_df, image_csv):
 def save_processed_data(data, output_csv, output_json):
     """Saves processed data to CSV and JSON files."""
     try:
-        # Ensure the directory exists
         os.makedirs(os.path.dirname(output_csv), exist_ok=True)
 
         # Save to CSV
@@ -87,8 +116,7 @@ def save_processed_data(data, output_csv, output_json):
     except Exception as e:
         print(f"Error saving processed data: {e}")
 
-
-def process_csv_files(text_csv, image_csv, output_csv, output_json):
+def process_csv_files(text_csv, image_csv, output_csv, output_json, lexicon_json):
     """Processes text and image CSV files and saves the combined data."""
     try:
         # Load the text data
@@ -101,15 +129,22 @@ def process_csv_files(text_csv, image_csv, output_csv, output_json):
 
         text_data = text_df['productDisplayName'].dropna().tolist()
 
-        # Tokenize, lemmatize, and process text data
+        # Tokenize and lemmatize text data
         print("Processing text data...")
         tokenized_data = tokenize_text(text_data)
         lemmatized_data = lemmatize_tokens(tokenized_data)
-        lexicon = create_lexicon(lemmatized_data)
 
-        # Add processed data back to the text DataFrame
+        # Create lexicon
+        print("Creating lexicon...")
+        lexicon = create_lexicon(lemmatized_data)
+        save_lexicon(lexicon, lexicon_json)
+
+        # Replace words with IDs in the tokens and lemmas columns
+        print("Replacing words with IDs...")
         text_df['tokens'] = tokenized_data
         text_df['lemmas'] = lemmatized_data
+        updated_data = replace_words_with_ids(text_df.to_dict(orient="records"), lexicon)
+        text_df = pd.DataFrame(updated_data)
 
         # Merge with image data
         print("Merging with image data...")
@@ -120,7 +155,8 @@ def process_csv_files(text_csv, image_csv, output_csv, output_json):
         save_processed_data(merged_data, output_csv, output_json)
 
         print(f"Total unique words in the lexicon: {len(lexicon)}")
-        print(f"Sample lexicon: {list(lexicon)[:20]}")
+        print(f"Sample lexicon: {list(lexicon.items())[:10]}")
+
     except Exception as e:
         print(f"Error processing CSV files: {e}")
 
@@ -130,6 +166,7 @@ if __name__ == '__main__':
     image_csv = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\raw_data\fashion-dataset\csv_folder\images.csv"
     output_csv = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\merged_processed.csv"
     output_json = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\merged_processed.json"
+    lexicon_json = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\lexicon.json"
 
     # Process the input CSV files
-    process_csv_files(text_csv, image_csv, output_csv, output_json)
+    process_csv_files(text_csv, image_csv, output_csv, output_json, lexicon_json)
