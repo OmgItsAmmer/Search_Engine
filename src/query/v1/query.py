@@ -1,3 +1,5 @@
+# v1.py
+
 import json
 import os
 import mmh3
@@ -8,23 +10,19 @@ from collections import defaultdict
 # Initialize the lemmatizer
 lemmatizer = WordNetLemmatizer()
 
-
 def lemmatize_query(query):
     """Lemmatize and tokenize the query words."""
     tokens = word_tokenize(query)
     lemmatized = [lemmatizer.lemmatize(token.lower()) for token in tokens]
     return lemmatized
 
-
 def get_barrel_key(word):
     """Return the first three letters of the word."""
     return word[:3]
 
-
 def murmur_hash(word):
     """Return the Murmur hash value of a word."""
     return mmh3.hash(str(word))
-
 
 def load_barrel(directory, barrel_key):
     """Load the barrel file corresponding to the barrel key."""
@@ -33,7 +31,6 @@ def load_barrel(directory, barrel_key):
         with open(barrel_file, 'r') as file:
             return json.load(file)
     return {}
-
 
 def find_documents(query, barrel_directory):
     """Find document IDs matching the query."""
@@ -58,13 +55,3 @@ def find_documents(query, barrel_directory):
         common_docs = set()
 
     return list(common_docs)
-
-
-# Example usage
-if __name__ == "__main__":
-    # Directory containing barrel files
-    barrel_directory = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\barrels\alphabateical_barrels\v3"
-
-    query = "ben 10"
-    results = find_documents(query, barrel_directory)
-    print("Matching Documents:", results)

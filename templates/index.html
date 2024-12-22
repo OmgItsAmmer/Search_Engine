@@ -1,20 +1,80 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Engine</title>
-    <!-- Correct usage of url_for to load the CSS file -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #search-form {
+            margin-bottom: 20px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        #loading {
+            display: none;
+            color: green;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Search Engine</h1>
-        <input type="text" id="searchInput" placeholder="Enter your search query...">
-        <button onclick="searchItems()">Search</button>
-        <div id="resultsContainer"></div>
-    </div>
-    <!-- Correct usage of url_for to load the JavaScript file -->
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <h1>Search for Documents</h1>
+    <form id="search-form">
+        <label for="query">Enter search keywords:</label>
+        <input type="text" id="query" name="query" placeholder="Search..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Loading indicator -->
+    <div id="loading">Searching...</div>
+
+    <h2>Search Results</h2>
+    <div id="results"></div>
+
+    <script>
+        // Handle form submission with JavaScript
+        document.getElementById('search-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+
+            // Show loading message
+            document.getElementById('loading').style.display = 'block';
+
+            // Send the search query to Flask via a POST request
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })  // Send the query as JSON
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading message
+                document.getElementById('loading').style.display = 'none';
+
+                // Display the search results
+                const resultsDiv = document.getElementById('results');
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = '<p>No documents found.</p>';
+                } else {
+                    resultsDiv.innerHTML = '<ul>' + data.map(doc => `<li>${doc}</li>`).join('') + '</ul>';
+                }
+            })
+            .catch(error => {
+                // Hide loading message and display error
+                document.getElementById('loading').style.display = 'none';
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '<p>Error occurred during the search.</p>';
+                console.error('Error:', error);
+            });
+        });
+    </script>
 </body>
 </html>
