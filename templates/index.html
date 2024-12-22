@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Engine</title>
+    <!-- Correct usage of url_for to load the CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Search Engine</h1>
+        <input type="text" id="searchInput" placeholder="Enter your search query...">
+        <button onclick="searchItems()">Search</button>
+        <div id="resultsContainer"></div>
+    </div>
+    <!-- Correct usage of url_for to load the JavaScript file -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
