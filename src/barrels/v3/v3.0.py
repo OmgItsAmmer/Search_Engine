@@ -63,6 +63,6 @@ def create_or_update_barrels(input_json, output_directory):
 
 
 # Example usage
-input_json = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v3\year_based_hashed_inverted_index.json"  # Path to your input JSON file
-output_directory = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\barrels\alphabateical_barrels\v3"  # Directory where barrel files will be saved
+input_json = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\year_based_hashed_inverted_index2.json" # Path to your input JSON file
+output_directory = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\barrels\alphabateical_barrels\v4"  # Directory where barrel files will be saved
 create_or_update_barrels(input_json, output_directory)

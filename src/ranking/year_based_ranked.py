@@ -21,7 +21,7 @@ def process_inverted_index(input_csv, output_csv, output_json):
                 if len(doc_parts) < 4:
                     continue  # Skip malformed entries
 
-                year_str = doc_parts[3].strip()  # Extract year as string
+                year_str = doc_parts[5].strip()  # Extract year as string
                 try:
                     year = int(float(year_str))  # Convert to integer year
                 except ValueError:
@@ -62,8 +62,8 @@ def process_inverted_index(input_csv, output_csv, output_json):
     print(f"- JSON: {output_json}")
 
 # Example usage
-input_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v3\cleaned_inverted_index.csv"  # Input file name
-output_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v3\year_based_hashed_inverted_index.csv"  # Output CSV file name
-output_json = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v3\year_based_hashed_inverted_index.json"  # Output JSON file name
+input_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\inverted_index.csv"  # Input file name
+output_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\year_based_hashed_inverted_index2.csv"  # Output CSV file name
+output_json = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\year_based_hashed_inverted_index2.json"  # Output JSON file name
 
 process_inverted_index(input_csv, output_csv, output_json)

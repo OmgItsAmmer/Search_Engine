@@ -1,4 +1,3 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,22 +8,58 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background-color: white;
         }
         #search-form {
             margin-bottom: 20px;
         }
         #results {
             margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
         }
         #loading {
             display: none;
             color: green;
             font-weight: bold;
         }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .card-content {
+            padding: 15px;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 10px;
+        }
+        .card-description {
+            font-size: 14px;
+            color: #555;
+        }
+        .card-gender, .card-sub-category, .card-year {
+            font-size: 14px;
+            color: #555;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
-    <h1>Search for Documents</h1>
+    <h1>Search for Products</h1>
     <form id="search-form">
         <label for="query">Enter search keywords:</label>
         <input type="text" id="query" name="query" placeholder="Search..." required>
@@ -38,7 +73,6 @@
     <div id="results"></div>
 
     <script>
-        // Handle form submission with JavaScript
         document.getElementById('search-form').addEventListener('submit', function(event) {
             event.preventDefault();
             const query = document.getElementById('query').value;
@@ -52,7 +86,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ query: query })  // Send the query as JSON
+                body: JSON.stringify({ query: query })
             })
             .then(response => response.json())
             .then(data => {
@@ -62,16 +96,25 @@
                 // Display the search results
                 const resultsDiv = document.getElementById('results');
                 if (data.length === 0) {
-                    resultsDiv.innerHTML = '<p>No documents found.</p>';
+                    resultsDiv.innerHTML = '<p>No products found.</p>';
                 } else {
-                    resultsDiv.innerHTML = '<ul>' + data.map(doc => `<li>${doc}</li>`).join('') + '</ul>';
+                    resultsDiv.innerHTML = data.map(product => `
+                        <div class="card">
+                            <img src="${product.image}" alt="${product.title}">
+                            <div class="card-content">
+                                <div class="card-title">${product.title}</div>
+                                <div class="card-gender">Gender: ${product.gender}</div>
+                                <div class="card-sub-category">Sub-category: ${product.sub_category}</div>
+                                <div class="card-year">Year: ${product.year}</div>
+                            </div>
+                        </div>
+                    `).join('');
                 }
             })
             .catch(error => {
                 // Hide loading message and display error
                 document.getElementById('loading').style.display = 'none';
-                const resultsDiv = document.getElementById('results');
-                resultsDiv.innerHTML = '<p>Error occurred during the search.</p>';
+                document.getElementById('results').innerHTML = '<p>Error occurred during the search.</p>';
                 console.error('Error:', error);
             });
         });

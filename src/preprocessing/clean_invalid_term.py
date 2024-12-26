@@ -35,8 +35,8 @@ def clean_invalid_terms(csv_file, output_file):
 
 
 # Example usage
-csv_file = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v3\inverted_index.csv"  # Input CSV file path
-output_file = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v3\cleaned_inverted_index.csv"  # Output CSV file path
+csv_file = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\inverted_index.csv"  # Input CSV file path
+output_file = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\cleaned_inverted_index.csv"  # Output CSV file path
 
 # Call the function to clean the CSV
 clean_invalid_terms(csv_file, output_file)
