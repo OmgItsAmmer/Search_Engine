@@ -57,9 +57,9 @@ def build_inverted_index(csv_file, lexicon_file, output_json_file, output_csv_fi
     df.to_csv(output_csv_file, index=False)
 
 # Example usage
-csv_file = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\merged_output.csv" # CSV file with the required columns
-lexicon_file = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\lexicons\lexicon.json"  # Lexicon JSON file
-output_json_file = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\inverted_index.json"  # Output file for the inverted index (JSON)
-output_csv_file = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\inverted_index.csv"  # Output file for the inverted index (CSV)
+csv_file = r"F:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\merged_output.csv" # CSV file with the required columns
+lexicon_file = r"F:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\lexicon.json"  # Lexicon JSON file
+output_json_file = r"F:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_datav4\inverted_index.json"  # Output file for the inverted index (JSON)
+output_csv_file = r"F:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\v4\inverted_index.csv"  # Output file for the inverted index (CSV)
 
 build_inverted_index(csv_file, lexicon_file, output_json_file, output_csv_file)

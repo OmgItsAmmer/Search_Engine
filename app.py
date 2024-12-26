@@ -12,7 +12,7 @@ app = Flask(__name__)
 lemmatizer = WordNetLemmatizer()
 
 # Path to barrel directory
-BARREL_DIRECTORY = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\barrels\alphabateical_barrels\v4"  # Adjust this path to your actual data location
+BARREL_DIRECTORY = r"F:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\v4barrel\v4"  # Adjust this path to your actual data location
 
 def lemmatize_query(query):
     """Lemmatize and tokenize the query words."""

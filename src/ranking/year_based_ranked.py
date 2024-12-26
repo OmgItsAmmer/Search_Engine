@@ -62,8 +62,8 @@ def process_inverted_index(input_csv, output_csv, output_json):
     print(f"- JSON: {output_json}")
 
 # Example usage
-input_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\inverted_index.csv"  # Input file name
-output_csv = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\year_based_hashed_inverted_index2.csv"  # Output CSV file name
-output_json = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\inverted_index\v4\year_based_hashed_inverted_index2.json"  # Output JSON file name
+input_csv = r"F:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\v4\inverted_index.csv"  # Input file name
+output_csv = r"F:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\v4\year_based_hashed_inverted_index2.csv"  # Output CSV file name
+output_json = r"F:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\v4\year_based_hashed_inverted_index2.json"  # Output JSON file name
 
 process_inverted_index(input_csv, output_csv, output_json)
