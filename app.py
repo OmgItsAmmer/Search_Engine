@@ -62,8 +62,40 @@ def parse_document_entry(entry):
         "image": image_url  # Image URL field
     }
 
+def rank_documents(query, documents):
+    """Rank documents based on the relevance of the query to the title and remove duplicates."""
+    query_lower = query.lower()
+    ranked_docs = []
+    seen_docs = set()  # Set to track unique document entries based on their content
+
+    for doc in documents:
+        # Create a unique identifier for the document based on its fields
+        doc_signature = f"{doc['id']}-{doc['title']}-{doc['gender']}-{doc['sub_category']}-{doc['year']}-{doc['image']}"
+
+        if doc_signature in seen_docs:
+            continue  # Skip duplicates
+
+        title_lower = doc['title'].lower()
+        if query_lower in title_lower:  # Exact match gets highest priority
+            rank = 1
+        elif all(word in title_lower for word in query_lower.split()):  # Partial match with all words
+            rank = 2
+        elif any(word in title_lower for word in query_lower.split()):  # Partial match with some words
+            rank = 3
+        else:
+            rank = 4  # Least relevant
+
+        ranked_docs.append((rank, doc))
+        seen_docs.add(doc_signature)  # Mark this document as seen
+
+    # Sort documents by rank (ascending order) and return
+    ranked_docs.sort(key=lambda x: x[0])
+    return [doc for _, doc in ranked_docs]
+
+
+
 def find_documents(query, barrel_directory):
-    """Find document IDs matching the query with optimization."""
+    """Find document IDs matching the query with optimization and ranking."""
     words = lemmatize_query(query)
 
     # Dictionary to keep track of document frequencies across all query words
@@ -85,14 +117,21 @@ def find_documents(query, barrel_directory):
                         intersected_docs.add(doc)
 
     # Merge documents from all years, prioritize intersected items
-    matching_docs = list(intersected_docs) + [
-        doc for doc, freq in document_frequency.items() if doc not in intersected_docs
-    ]
+    matching_docs = list(intersected_docs)
+
+    # + [
+    #     doc for doc, freq in document_frequency.items() if doc not in intersected_docs
+    # ]
+
 
     # Parse the results into structured format
     parsed_results = [parse_document_entry(doc) for doc in matching_docs if parse_document_entry(doc)]
 
-    return parsed_results
+    # Rank the parsed results
+    ranked_results = rank_documents(query, parsed_results)
+
+    return ranked_results
+
 
 @app.route('/')
 def index():
