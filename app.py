@@ -4,6 +4,7 @@ import mmh3
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from flask import Flask, request, jsonify, render_template
+from src.dynamic_adding.v1_0 import process_and_add_to_barrel
 
 # Initialize the Flask app
 app = Flask(__name__)
@@ -62,34 +63,73 @@ def parse_document_entry(entry):
         "image": image_url  # Image URL field
     }
 
+def rank_documents(query, documents):
+    """Rank documents based on the relevance of the query to the title and remove duplicates."""
+    query_lower = query.lower()
+    ranked_docs = []
+    seen_docs = set()  # Set to track unique document entries based on their content
+
+    for doc in documents:
+        # Create a unique identifier for the document based on its fields
+        doc_signature = f"{doc['id']}-{doc['title']}-{doc['gender']}-{doc['sub_category']}-{doc['year']}-{doc['image']}"
+
+        if doc_signature in seen_docs:
+            continue  # Skip duplicates
+
+        title_lower = doc['title'].lower()
+        if query_lower in title_lower:  # Exact match gets highest priority
+            rank = 1
+        elif all(word in title_lower for word in query_lower.split()):  # Partial match with all words
+            rank = 2
+        elif any(word in title_lower for word in query_lower.split()):  # Partial match with some words
+            rank = 3
+        else:
+            rank = 4  # Least relevant
+
+        ranked_docs.append((rank, doc))
+        seen_docs.add(doc_signature)  # Mark this document as seen
+
+    # Sort documents by rank (ascending order) and return
+    ranked_docs.sort(key=lambda x: x[0])
+    return [doc for _, doc in ranked_docs]
+
+
+
 def find_documents(query, barrel_directory):
-    """Find document IDs matching the query."""
+    """Find document IDs matching the query with optimization and ranking."""
     words = lemmatize_query(query)
 
-    # Retrieve barrels and find matching hash values
-    result_sets = []
+    # Dictionary to keep track of document frequencies across all query words
+    document_frequency = {}
+    intersected_docs = set()  # To store documents that match all query words
+
+    # Iterate over lemmatized words to find matching documents
     for word in words:
         barrel_key = get_barrel_key(word)
         barrel = load_barrel(barrel_directory, barrel_key)
         hash_value = str(murmur_hash(word))
 
         if hash_value in barrel:
-            result_sets.append(set(doc for year_docs in barrel[hash_value].values() for doc in year_docs))
+            for year_docs in barrel[hash_value].values():
+                for doc in year_docs:
+                    # Track the frequency of each document across all query words
+                    document_frequency[doc] = document_frequency.get(doc, 0) + 1
+                    if document_frequency[doc] == len(words):
+                        intersected_docs.add(doc)
 
-    # Take the intersection of all result sets
-    if result_sets:
-        common_docs = set.intersection(*result_sets)
-    else:
-        common_docs = set()
+    # Merge documents from all years, prioritize intersected items
+    matching_docs = list(intersected_docs) + [
+        doc for doc, freq in document_frequency.items() if doc not in intersected_docs
+    ]
 
-    # Parse documents into structured format
-    parsed_results = []
-    for doc in common_docs:
-        parsed_entry = parse_document_entry(doc)
-        if parsed_entry:
-            parsed_results.append(parsed_entry)
+    # Parse the results into structured format
+    parsed_results = [parse_document_entry(doc) for doc in matching_docs if parse_document_entry(doc)]
 
-    return parsed_results
+    # Rank the parsed results
+    ranked_results = rank_documents(query, parsed_results)
+
+    return ranked_results
+
 
 @app.route('/')
 def index():
@@ -103,6 +143,40 @@ def search():
     query = data.get('query', '')
     results = find_documents(query, BARREL_DIRECTORY)
     return jsonify(results)
+@app.route('/submit', methods=['POST'])
+def submit():
+    try:
+        # Get data from the incoming JSON request
+        data = request.json  # Expecting JSON input
+        
+        # Extract necessary fields from the request
+        title = data.get('title', '').strip()
+        gender = data.get('gender', '').strip()
+        mastercategory = data.get('category', '').strip()  # Changed from mastercategory to category
+        subcategory = data.get('subCategory', '').strip()  # Changed from subcategory to subCategory
+        year = data.get('year')
+        image_url = data.get('image_url', '').strip()
+
+        # Check if all necessary fields are present
+        if not all([title, gender, mastercategory, subcategory, year, image_url]):
+            return jsonify({"message": "Missing required fields", "status": "error"}), 400
+        
+        # Optional: You can validate the year and image_url formats if needed
+        if not isinstance(year, int) or year < 1900 or year > 2100:
+            return jsonify({"message": "Invalid year", "status": "error"}), 400
+        
+        # Process and add the data to the barrel (function call is assumed to be defined)
+        process_and_add_to_barrel(gender, mastercategory, subcategory, year, title, image_url, BARREL_DIRECTORY)
+        
+        # Return success response
+        return jsonify({"message": "Data submitted successfully", "status": "success"}), 200
+        
+    except Exception as e:
+        # Log the exception for debugging
+        print(f"Error: {str(e)}")  # Or use logging for more advanced logging
+        return jsonify({"message": f"An error occurred: {str(e)}", "status": "error"}), 500
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

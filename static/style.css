@@ -1,9 +1,20 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
-    background: linear-gradient(to bottom right, #2b2b2b 0%, #1a1a1a 100%);
-/* Alternative option with more burgundy tone */
-/* background: linear-gradient(to bottom right, #441f2d 0%, #1a1a1a 100%); */
+
+    /* background: linear-gradient(to bottom right, #2b2b2b 0%, #1a1a1a 100%); */
+    /* background-image: url(/static/images/bg1.jpg); */
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        /* Semi-transparent overlay */
+        url('/static/images/bg1.jpg');
+
+    background-size: cover;
+    background-position: center center;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    /* Alternative option with more burgundy tone */
+    /* background: linear-gradient(to bottom right, #441f2d 0%, #1a1a1a 100%); */
 }
 
 
@@ -24,7 +35,7 @@ body {
     z-index: 3;
     position: relative;
     min-height: 44px;
-    background: #fff;
+    background: #222222;
     border: 1px solid #dfe1e5;
     box-shadow: 0px 2px 8px 0px rgba(60, 64, 67, 0.25);
     border-radius: 24px;
@@ -33,20 +44,24 @@ body {
 
     width: 70%;
     max-width: 584px;
-   
-  
-  
-  
-  background-color: #222222; /* Dark gray background */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-  color: #fff; /* White text color */
-  /* font-size: 16px; */
-  /* margin-top: 20px; Spacing from top; */
+
+
+    color: white;
+
+    background-color: #222222;
+    /* Dark gray background */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
+    /* color: #fff; White text color */
+    /* font-size: 16px; */
+    /* margin-top: 20px; Spacing from top; */
 
 }
-.input:hover{
+
+.input:hover {
     background-color: #111111;
 }
+
 .search-container {
     display: flex;
     justify-content: center;
@@ -60,7 +75,8 @@ body {
     display: flex;
     justify-content: center;
 }
-.logo{
+
+.logo {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -69,18 +85,20 @@ body {
     padding-right: 70px;
 
 }
-.logo img{
-width: 80px;
-border-radius: 50%;
+
+.logo img {
+    width: 80px;
+    border-radius: 50%;
 
 
 }
+
 .logo-text {
     font-family: 'Arial', sans-serif;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 2px;
-    
+
     padding: 20px 4px;
     display: flex;
     align-items: center;
@@ -88,27 +106,31 @@ border-radius: 50%;
 }
 
 .logo-text span.fashion h1 {
-    color: #FF1493 !important;  /* Hot pink */
+    color: #FF1493 !important;
+    /* Hot pink */
     display: inline-block;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
     font-size: 2.5rem;
 }
 
 .logo-text span.oracle h1 {
-    color: #ffffff !important;  /* Hot pink */
+    color: #ffffff !important;
+    /* Hot pink */
     display: inline-block;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
     font-size: 2.5rem;
 }
+
 /* More specific selectors */
 
 /* Optional: Add this to improve the shadow effect */
-.fashion, .oracle {
+.fashion,
+.oracle {
     margin: 0;
     line-height: 1;
 }
 
-.btn{ 
+.btn {
 
     background: linear-gradient(145deg, #8B2942 0%, #6B1F32 100%);
     color: #FFFFFF;
@@ -123,16 +145,18 @@ border-radius: 50%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.btn:hover{
+.btn:hover {
     background: linear-gradient(145deg, #9E2F4C 0%, #7B2339 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     color: #FFFFFF;
 }
+
 .btn:active {
     transform: translateY(1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .btn:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(139, 41, 66, 0.3);
@@ -163,8 +187,9 @@ border-radius: 50%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;
     background: transparent;
-    
-    
+    /* background-color: #111111; */
+
+
 }
 
 .card:hover {
@@ -177,7 +202,7 @@ border-radius: 50%;
     width: 100%;
     height: 200px;
     object-fit: cover;
-    
+
 }
 
 .card-content {
