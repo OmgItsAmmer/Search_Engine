@@ -12,7 +12,7 @@ app = Flask(__name__)
 lemmatizer = WordNetLemmatizer()
 
 # Path to barrel directory
-BARREL_DIRECTORY = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\barrels\alphabateical_barrels\v4" # Adjust this path to your actual data location
+BARREL_DIRECTORY = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\barrels\alphabateical_barrels\v4"  # Adjust this path to your actual data location
 
 def lemmatize_query(query):
     """Lemmatize and tokenize the query words."""
@@ -63,31 +63,34 @@ def parse_document_entry(entry):
     }
 
 def find_documents(query, barrel_directory):
-    """Find document IDs matching the query."""
+    """Find document IDs matching the query with optimization."""
     words = lemmatize_query(query)
 
-    # Retrieve barrels and find matching hash values
-    result_sets = []
+    # Dictionary to keep track of document frequencies across all query words
+    document_frequency = {}
+    intersected_docs = set()  # To store documents that match all query words
+
+    # Iterate over lemmatized words to find matching documents
     for word in words:
         barrel_key = get_barrel_key(word)
         barrel = load_barrel(barrel_directory, barrel_key)
         hash_value = str(murmur_hash(word))
 
         if hash_value in barrel:
-            result_sets.append(set(doc for year_docs in barrel[hash_value].values() for doc in year_docs))
+            for year_docs in barrel[hash_value].values():
+                for doc in year_docs:
+                    # Track the frequency of each document across all query words
+                    document_frequency[doc] = document_frequency.get(doc, 0) + 1
+                    if document_frequency[doc] == len(words):
+                        intersected_docs.add(doc)
 
-    # Take the intersection of all result sets
-    if result_sets:
-        common_docs = set.intersection(*result_sets)
-    else:
-        common_docs = set()
+    # Merge documents from all years, prioritize intersected items
+    matching_docs = list(intersected_docs) + [
+        doc for doc, freq in document_frequency.items() if doc not in intersected_docs
+    ]
 
-    # Parse documents into structured format
-    parsed_results = []
-    for doc in common_docs:
-        parsed_entry = parse_document_entry(doc)
-        if parsed_entry:
-            parsed_results.append(parsed_entry)
+    # Parse the results into structured format
+    parsed_results = [parse_document_entry(doc) for doc in matching_docs if parse_document_entry(doc)]
 
     return parsed_results
 
@@ -103,6 +106,7 @@ def search():
     query = data.get('query', '')
     results = find_documents(query, BARREL_DIRECTORY)
     return jsonify(results)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

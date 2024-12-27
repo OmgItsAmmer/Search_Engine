@@ -17,13 +17,18 @@ stop_words = set(stopwords.words("english"))
 def generate_hash(word):
     return mmh3.hash(word)
 
+# Global variable for tracking docid
+docid_counter = 59899
+
 def tokenize_and_lemmatize(text):
     """Tokenize and lemmatize the given text."""
     tokens = word_tokenize(text)
     # Remove stopwords and punctuations, then lemmatize
     return [lemmatizer.lemmatize(token.lower()) for token in tokens if token.isalnum() and token.lower() not in stop_words]
 
-def process_and_add_to_barrel(gender, mastercategory, subcategory, season, year, product_display_name, image_url, barrel_dir):
+def process_and_add_to_barrel(gender, mastercategory, subcategory, year, product_display_name, image_url, barrel_dir):
+    global docid_counter
+
     # Step 1: Tokenize and Lemmatize the product display name
     lemmas = tokenize_and_lemmatize(product_display_name)
 
@@ -35,7 +40,8 @@ def process_and_add_to_barrel(gender, mastercategory, subcategory, season, year,
         lemma_hash = generate_hash(lemma)
 
         # Prepare the data entry to add
-        product_entry = f"{lemma_hash},{product_display_name},{gender},{mastercategory},{subcategory},{season},{year},{image_url},extras"
+        product_entry = f"{docid_counter},{product_display_name},{gender},{mastercategory},{subcategory},{year},{image_url},extras"
+        docid_counter += 1  # Increment docid for the next entry
 
         # Read or create the JSON file for the lemma barrel
         if os.path.exists(barrel_file_path):
@@ -57,16 +63,15 @@ def process_and_add_to_barrel(gender, mastercategory, subcategory, season, year,
         with open(barrel_file_path, 'w', encoding='utf-8') as file:
             json.dump(barrel_data, file, indent=4)
 
-        print(f"Data for lemma '{lemma}' added to barrel file '{barrel_file_path}'.")
+        print(f"Data for lemma '{lemma}' added to barrel file '{barrel_file_path}' with docid {docid_counter - 1}.")
 
 # Example usage
-gender = "men"
+gender = "Boys"
 mastercategory = "Apparel"
 subcategory = "Topwear"
-season = "Annual"
 year = 2011
-product_display_name = "blue turtle underwear"
+product_display_name = "blue turtle shirt"
 image_url = "http://example.com/image.jpg"
 barrel_dir = r"C:\Users\ammer\OneDrive\Desktop\SearchEngine\data\processed_data\barrels\alphabateical_barrels\v4"  # Directory where barrels are stored
 
-process_and_add_to_barrel(gender, mastercategory, subcategory, season, year, product_display_name, image_url, barrel_dir)
+process_and_add_to_barrel(gender, mastercategory, subcategory, year, product_display_name, image_url, barrel_dir)
