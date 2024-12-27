@@ -118,9 +118,7 @@ def find_documents(query, barrel_directory):
                         intersected_docs.add(doc)
 
     # Merge documents from all years, prioritize intersected items
-    matching_docs = list(intersected_docs) + [
-        doc for doc, freq in document_frequency.items() if doc not in intersected_docs
-    ]
+    matching_docs = list(intersected_docs) 
 
     # Parse the results into structured format
     parsed_results = [parse_document_entry(doc) for doc in matching_docs if parse_document_entry(doc)]
