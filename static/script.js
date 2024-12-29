@@ -1,4 +1,5 @@
 // Handling Search Form Submission
+
 document.getElementById('search-form').addEventListener('submit', function (event) {
     event.preventDefault(); // Prevent default form submission
 
@@ -32,7 +33,7 @@ document.getElementById('search-form').addEventListener('submit', function (even
                         <div class="card-title">${product.title}</div>
                         <div class="card-gender">Gender: ${product.gender}</div>
                         <div class="card-sub-category">Sub-category: ${product.sub_category}</div>
-                        <div class="card-year">Year: ${product.year}</div>
+                        <div class="card-year">Year: ${Math.trunc(product.year)}</div>
                     </div>
                 </div>
             `).join('');
