@@ -1,135 +1,70 @@
-import nltk
 import pandas as pd
-import os
 import json
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from textblob import TextBlob
+from collections import Counter
+import ast
 
-# Initialize the lemmatizer
-lemmatizer = WordNetLemmatizer()
 
-# Download necessary NLTK data files
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('wordnet')
+def process_lexicons(input_csv, output_lexicon_csv, output_lexicon_json):
+    """
+    Processes a CSV file to generate lexicons for all columns except IDs.
+    Handles the 'lemmas' column which contains lists of items.
+    Converts all words to lowercase before generating the lexicon.
+    Saves lexicons as a CSV and JSON file.
 
-def correct_spelling(text):
-    """Correct spelling using TextBlob."""
+    Parameters:
+    - input_csv: Path to the input CSV file
+    - output_lexicon_csv: Path to save the lexicon CSV file
+    - output_lexicon_json: Path to save the lexicon JSON file
+    """
     try:
-        return str(TextBlob(text).correct())
+        # Load the input CSV
+        print("Loading CSV data...")
+        df = pd.read_csv(input_csv)
+
+        # Drop ID column if it exists
+        if 'id' in df.columns:
+            df = df.drop(columns=['id'])
+
+        lexicon_counter = Counter()
+
+        # Iterate through each column to process lexicons
+        for col in df.columns:
+            print(f"Processing column: {col}")
+            for row in df[col].dropna():
+                if col == 'lemmas':
+                    # Convert string representation of lists to actual lists
+                    try:
+                        lemmas_list = ast.literal_eval(row)
+                        if isinstance(lemmas_list, list):
+                            # Convert lemmas to lowercase
+                            lemmas_list = [lemma.lower() for lemma in lemmas_list]
+                            lexicon_counter.update(lemmas_list)
+                    except Exception as e:
+                        print(f"Skipping invalid lemmas entry: {row} | Error: {e}")
+                else:
+                    # Split other columns into words (space-separated) and convert to lowercase
+                    words = str(row).lower().split()
+                    lexicon_counter.update(words)
+
+        # Save lexicon as CSV
+        print("Saving lexicon to CSV...")
+        lexicon_df = pd.DataFrame(lexicon_counter.items(), columns=['Word', 'Count'])
+        lexicon_df.sort_values(by='Count', ascending=False, inplace=True)
+        lexicon_df.to_csv(output_lexicon_csv, index=False)
+
+        # Save lexicon as JSON
+        print("Saving lexicon to JSON...")
+        with open(output_lexicon_json, 'w') as json_file:
+            json.dump(dict(lexicon_counter), json_file, indent=4)
+
+        print("Lexicon processing complete.")
+        print(f"Total unique words: {len(lexicon_counter)}")
     except Exception as e:
-        print(f"Error correcting spelling for text: {text}. Error: {e}")
-        return text
-
-def tokenize_text(text_data):
-    """Tokenizes, cleans, and removes stopwords from text data."""
-    stop_words = set(stopwords.words('english'))
-    tokenized_data = []
-
-    for text in text_data:
-        if pd.isna(text):
-            tokenized_data.append([])
-            continue
-        corrected_text = correct_spelling(text)  # Correct spelling
-        tokens = word_tokenize(corrected_text.lower())  # Tokenize and convert to lowercase
-        filtered_tokens = [word for word in tokens if word.isalnum() and word not in stop_words]  # Remove non-alphanumeric tokens and stopwords
-        tokenized_data.append(filtered_tokens)
-
-    return tokenized_data
-
-def lemmatize_tokens(tokenized_data):
-    """Lemmatizes tokenized data."""
-    lemmatized_data = []
-    for tokens in tokenized_data:
-        lemmatized_tokens = [lemmatizer.lemmatize(word) for word in tokens]
-        lemmatized_data.append(lemmatized_tokens)
-    return lemmatized_data
-
-def create_lexicon(lemmatized_data):
-    """Creates a lexicon (unique set of words) from lemmatized data."""
-    lexicon = set()
-    for tokens in lemmatized_data:
-        lexicon.update(tokens)
-    return lexicon
-
-def merge_with_image_data(text_df, image_csv):
-    """Merges text data with image data using a common 'id' column."""
-    try:
-        # Load image data
-        image_df = pd.read_csv(image_csv)
-
-        # Ensure 'id' columns match formats (strip extensions if necessary)
-        text_df['id'] = text_df['id'].astype(str).str.replace('.jpg', '', regex=False)
-        image_df['id'] = image_df['id'].astype(str).str.replace('.jpg', '', regex=False)
-
-        # Merge text and image data on 'id'
-        merged_data = pd.merge(text_df, image_df, on='id', how='left')
-        return merged_data
-    except Exception as e:
-        print(f"Error merging data: {e}")
-        return text_df
-
-def save_processed_data(data, output_csv, output_json):
-    """Saves processed data to CSV and JSON files."""
-    try:
-        # Ensure the directory exists
-        os.makedirs(os.path.dirname(output_csv), exist_ok=True)
-
-        # Save to CSV
-        data.to_csv(output_csv, index=False)
-        print(f"Processed data saved to {output_csv}")
-
-        # Save to JSON
-        data.to_json(output_json, orient='records', indent=4)
-        print(f"Processed data saved to {output_json}")
-    except Exception as e:
-        print(f"Error saving processed data: {e}")
+        print(f"Error: {e}")
 
 
-def process_csv_files(text_csv, image_csv, output_csv, output_json):
-    """Processes text and image CSV files and saves the combined data."""
-    try:
-        # Load the text data
-        print("Loading text data...")
-        text_df = pd.read_csv(text_csv)
-
-        # Ensure necessary columns exist
-        if 'productDisplayName' not in text_df.columns or 'id' not in text_df.columns:
-            raise ValueError("Input text CSV must contain 'productDisplayName' and 'id' columns.")
-
-        text_data = text_df['productDisplayName'].dropna().tolist()
-
-        # Tokenize, lemmatize, and process text data
-        print("Processing text data...")
-        tokenized_data = tokenize_text(text_data)
-        lemmatized_data = lemmatize_tokens(tokenized_data)
-        lexicon = create_lexicon(lemmatized_data)
-
-        # Add processed data back to the text DataFrame
-        text_df['tokens'] = tokenized_data
-        text_df['lemmas'] = lemmatized_data
-
-        # Merge with image data
-        print("Merging with image data...")
-        merged_data = merge_with_image_data(text_df, image_csv)
-
-        # Save processed and merged data
-        print("Saving processed data...")
-        save_processed_data(merged_data, output_csv, output_json)
-
-        print(f"Total unique words in the lexicon: {len(lexicon)}")
-        print(f"Sample lexicon: {list(lexicon)[:20]}")
-    except Exception as e:
-        print(f"Error processing CSV files: {e}")
-
-if __name__ == '__main__':
-    # Define file paths
-    text_csv = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\raw_data\fashion-dataset\csv_folder\styles_new.csv"
-    image_csv = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\raw_data\fashion-dataset\csv_folder\images.csv"
-    output_csv = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\merged_processed.csv"
-    output_json = r"E:\Class\3 rd Semester\DSA\Assignments\Project\Search_Engine\data\processed_data\merged_processed.json"
-
-    # Process the input CSV files
-    process_csv_files(text_csv, image_csv, output_csv, output_json)
+# Example usage
+input_csv = 'your_input_file.csv'  # Replace with your file path
+output_lexicon_csv = 'lexicon_output.csv'
+output_lexicon_json = 'lexicon_output.json'
+process_lexicons(input_csv, output_lexicon_csv, output_lexicon_json)
